@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
-Consume events from phidgets sensors and submit to rabbit mq queus"""
+Consume events from phidgets sensors and submit to rabbit mq queus
+Code taken from the phidgets public examples"""
 
 __author__ = 'Daniel Nihlen'
 __version__ = '0.1'
@@ -48,30 +49,30 @@ def displayDeviceInfo(interfaceKit):
 #Event Handler Callback Functions
 def interfaceKitAttached(e):
     attached = e.device
-    print("InterfaceKit %i Attached!" % (attached.getSerialNum()))
+    print("InterfaceKit {} Attached!".format(attached.getSerialNum()))
 
 def interfaceKitDetached(e):
     detached = e.device
-    print("InterfaceKit %i Detached!" % (detached.getSerialNum()))
+    print("InterfaceKit {} Detached!".format(detached.getSerialNum()))
 
 def interfaceKitError(e):
     try:
         source = e.device
-        print("InterfaceKit %i: Phidget Error %i: %s" % (source.getSerialNum(), e.eCode, e.description))
+        print("InterfaceKit {}: Phidget Error {}: {}".format(source.getSerialNum(), e.eCode, e.description))
     except PhidgetException as e:
-        print("Phidget Exception %i: %s" % (e.code, e.details))
+        print("Phidget Exception {}: {}".format(e.code, e.details))
 
 def interfaceKitInputChanged(e):
     source = e.device
-    print("InterfaceKit %i: Input %i: %s" % (source.getSerialNum(), e.index, e.state))
+    print("InterfaceKit {}: Input {}: {}".format(source.getSerialNum(), e.index, e.state))
 
 def interfaceKitSensorChanged(e):
     source = e.device
-    print("InterfaceKit %i: Sensor %i: %i" % (source.getSerialNum(), e.index, e.value))
+    print("InterfaceKit {}: Sensor {}: {}".format(source.getSerialNum(), e.index, e.value))
 
 def interfaceKitOutputChanged(e):
     source = e.device
-    print("InterfaceKit %i: Output %i: %s" % (source.getSerialNum(), e.index, e.state))
+    print("InterfaceKit {}: Output {}: {}".format(source.getSerialNum(), e.index, e.state))
 
 def setHandlers(interfaceKit): 
     try:
@@ -95,16 +96,14 @@ def openPhidget(interfaceKit):
 
 def attachPhidget(interfaceKit):
     try:
-        interfaceKit.waitForAttach(10000)
+        interfaceKit.waitForAttach(5000)
     except PhidgetException as e:
         print("Phidget Exception %i: %s" % (e.code, e.details))
         try:
             interfaceKit.closePhidget()
         except PhidgetException as e:
-            print("Phidget Exception %i: %s" % (e.code, e.details))
-            print("Exiting....")
+            print("Phidget Exception {}: {}".format(e.code, e.details))
             exit(1)
-        print("Exiting....")
         exit(1)
     else:
         displayDeviceInfo(interfaceKit)
@@ -117,7 +116,7 @@ def setRate(interfaceKit):
             interfaceKit.setDataRate(i, 4)
             print("rate is {}".format(interfaceKit.getDataRate(i)))
         except PhidgetException as e:
-            print("Phidget Exception %i: %s" % (e.code, e.details))
+            print("Phidget Exception {}: {}".format(e.code, e.details))
     
 def main():
     interfaceKit = create_intefracekit()
@@ -125,10 +124,9 @@ def main():
     openPhidget(interfaceKit)
     attachPhidget(interfaceKit)
     setRate(interfaceKit)
-    
+
+    #wait for input from user to close program.
     chr = sys.stdin.read(1)
-    
-    print("Closing...")
     
     try:
         interfaceKit.closePhidget()
