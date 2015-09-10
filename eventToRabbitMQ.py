@@ -23,6 +23,7 @@ from Phidgets.Phidget import PhidgetLogLevel
 
 #RabbitMQ by Pika
 import pika
+import datetime
 
 
 def create_intefracekit():
@@ -47,11 +48,12 @@ def initRabbit():
     channel.queue_declare(queue='pulserr_raw')
 
 def sendRabbitMessage(sensor, value):
-    body = "{{\"sensor\": {},\"value\" : {}}}".format(sensor, value)
-    channel.basic_publish(exchange='',
-                          routing_key='pulserr_raw',
-                          body=body)
-    
+    body = "{{\
+    \"time\" : {},\
+    \"sensor\": {},\
+    \"value\" : {}}}".format(datetime.datetime.now(), sensor, value)
+    print(body)
+    channel.basic_publish(exchange='', routing_key='pulserr_raw', body=body)
 
 #Event Handler Callback Functions
 def interfaceKitAttached(e):
