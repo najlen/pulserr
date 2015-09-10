@@ -20,6 +20,9 @@ from Phidgets.Events.Events import AttachEventArgs, DetachEventArgs, ErrorEventA
 from Phidgets.Devices.InterfaceKit import InterfaceKit
 from Phidgets.Phidget import PhidgetLogLevel
 
+#RabbitMQ by Pika
+import pika
+
 def create_intefracekit():
     print("create_intefacekit")
     #Create an interfacekit object
@@ -110,31 +113,42 @@ def attachPhidget(interfaceKit):
 
 
 def setRate(interfaceKit):
+    ik = interfaceKit
     for i in range(interfaceKit.getSensorCount()):
+        print("setRate for {}".format(i))
         try:
-            print("rate for sensor {} is {}".format(i, interfaceKit.getDataRate(i)))
-            interfaceKit.setDataRate(i, 4)
+            interfaceKit.setDataRate(i, 16)
             print("rate is {}".format(interfaceKit.getDataRate(i)))
         except PhidgetException as e:
             print("Phidget Exception {}: {}".format(e.code, e.details))
+            raise
+        
+def setChangeTrigger(interfaceKit):
+    for i in range(interfaceKit.getSensorCount()):
+        try:
+            interfaceKit.setSensorChangeTrigger(i,2)
+        except PhidgetException as e:
+            print("Phidget Exception {}: {}".format(e.code, e.details))    
+    
+def closeInterfacekit(interfaceKit):
+    try:
+        interfaceKit.closePhidget()
+    except PhidgetException as e:
+        print("Phidget Exception {}: {}".format(e.code, e.details))
+        exit(1)
+    
     
 def main():
     interfaceKit = create_intefracekit()
     setHandlers(interfaceKit)
     openPhidget(interfaceKit)
     attachPhidget(interfaceKit)
+    setChangeTrigger(interfaceKit)
     setRate(interfaceKit)
 
     #wait for input from user to close program.
     chr = sys.stdin.read(1)
-    
-    try:
-        interfaceKit.closePhidget()
-    except PhidgetException as e:
-        print("Phidget Exception %i: %s" % (e.code, e.details))
-        print("Exiting....")
-        exit(1)
-    
-    print("Done.")
+    closePhidget(interfaceKit)
+        
     exit(0)
 main()
