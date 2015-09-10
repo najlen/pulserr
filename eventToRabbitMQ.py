@@ -2,7 +2,8 @@
 
 """
 Consume events from phidgets sensors and submit to rabbit mq queus
-Code taken from the phidgets public examples"""
+Code taken from the phidgets public examples
+"""
 
 __author__ = 'Daniel Nihlen'
 __version__ = '0.1'
@@ -23,6 +24,7 @@ from Phidgets.Phidget import PhidgetLogLevel
 #RabbitMQ by Pika
 import pika
 
+
 def create_intefracekit():
     print("create_intefacekit")
     #Create an interfacekit object
@@ -36,18 +38,20 @@ def create_intefracekit():
     return interfaceKit
 
 
-#Information Display Function
-def displayDeviceInfo(interfaceKit):
-    print("|------------|----------------------------------|--------------|------------|")
-    print("|- Attached -|-              Type              -|- Serial No. -|-  Version -|")
-    print("|------------|----------------------------------|--------------|------------|")
-    print("|- %8s -|- %30s -|- %10d -|- %8d -|" % (interfaceKit.isAttached(), interfaceKit.getDeviceName(), interfaceKit.getSerialNum(), interfaceKit.getDeviceVersion()))
-    print("|------------|----------------------------------|--------------|------------|")
-    print("Number of Digital Inputs: %i" % (interfaceKit.getInputCount()))
-    print("Number of Digital Outputs: %i" % (interfaceKit.getOutputCount()))
-    print("Number of Sensor Inputs: %i" % (interfaceKit.getSensorCount()))
+## RabbitMQ functions
+def initRabbit():
+    global channel
+    global connection
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='pulserr_raw')
 
-
+def sendRabbitMessage(sensor, value):
+    body = "{{\"sensor\": {},\"value\" : {}}}".format(sensor, value)
+    channel.basic_publish(exchange='',
+                          routing_key='pulserr_raw',
+                          body=body)
+    
 
 #Event Handler Callback Functions
 def interfaceKitAttached(e):
@@ -71,7 +75,7 @@ def interfaceKitInputChanged(e):
 
 def interfaceKitSensorChanged(e):
     source = e.device
-    print("InterfaceKit {}: Sensor {}: {}".format(source.getSerialNum(), e.index, e.value))
+    sendRabbitMessage(e.index, e.value)
 
 def interfaceKitOutputChanged(e):
     source = e.device
@@ -108,8 +112,7 @@ def attachPhidget(interfaceKit):
             print("Phidget Exception {}: {}".format(e.code, e.details))
             exit(1)
         exit(1)
-    else:
-        displayDeviceInfo(interfaceKit)
+
 
 
 def setRate(interfaceKit):
@@ -137,8 +140,11 @@ def closeInterfacekit(interfaceKit):
         print("Phidget Exception {}: {}".format(e.code, e.details))
         exit(1)
     
-    
+
+
+
 def main():
+    initRabbit()
     interfaceKit = create_intefracekit()
     setHandlers(interfaceKit)
     openPhidget(interfaceKit)
@@ -148,7 +154,8 @@ def main():
 
     #wait for input from user to close program.
     chr = sys.stdin.read(1)
-    closePhidget(interfaceKit)
+    interfaceKit.closePhidget()
+    connection.close()
         
     exit(0)
 main()
