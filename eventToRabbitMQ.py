@@ -48,7 +48,7 @@ def initRabbit():
 
 def sendRabbitMessage(sensor, value):
     body = "{{\
-    \"time\" : {},\
+    \"time\" : \"{}\",\
     \"sensor\": {},\
     \"value\" : {}}}".format(datetime.datetime.now(), sensor, value)
     print(body)
