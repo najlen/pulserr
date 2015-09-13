@@ -12,7 +12,6 @@ __date__ = '2015-09-08'
 #Basic imports
 from ctypes import *
 import sys
-import random
 from pprint import pprint as pp
 
 #Phidget specific imports
