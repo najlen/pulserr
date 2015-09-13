@@ -29,7 +29,6 @@ def init_rabbit():
     channel.queue_declare(queue='pulserr_pulse')
 
 
-init_rabbit()
 
 def pulse(data):
     print("Pulse received at {}".format(data['time']))
@@ -63,7 +62,9 @@ def indentify_pulse(json_data):
 def event_callback(ch, method, properties, body):
     indentify_pulse(body)
 
-    
-
-channel.basic_consume(event_callback, queue='pulserr_raw', no_ack=True)
-channel.start_consuming()
+def main():
+    init_rabbit()
+    channel.basic_consume(event_callback, queue='pulserr_raw', no_ack=True)
+    channel.start_consuming()
+        
+main()

@@ -9,3 +9,12 @@ Listen for events from phidgets sensors and push to a rabbitmq. This raw sensor 
 * eventsToPulse.py
 
 Consume raw sensor events and identify pulses. Push pulses to rabbitmq.
+
+## Todo
+* pulseToDB.py
+
+Consume pulses and submit to db.
+
+* pulseToGecko.py
+
+Consume pulses and submit to Geckoboard.
