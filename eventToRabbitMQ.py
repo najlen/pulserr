@@ -23,6 +23,7 @@ from Phidgets.Phidget import PhidgetLogLevel
 #RabbitMQ by Pika
 import pika
 import datetime
+import time
 
 
 def create_intefracekit():
@@ -154,7 +155,9 @@ def main():
     setRate(interfaceKit)
 
     #wait for input from user to close program.
-    chr = sys.stdin.read(1)
+    #chr = sys.stdin.read(1)
+    while True:
+        time.sleep(5)
     interfaceKit.closePhidget()
     connection.close()
         
