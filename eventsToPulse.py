@@ -19,13 +19,14 @@ global rising
 rising = True
 last_value = 0
 
+global channel
 
 def init_rabbit():
-    global event_channel
+    global channel
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    event_channel = connection.channel()
-    event_channel.queue_declare(queue='pulserr_raw')
-    event_channel.queue_declare(queue='pulserr_pulse')
+    channel = connection.channel()
+    channel.queue_declare(queue='pulserr_raw')
+    channel.queue_declare(queue='pulserr_pulse')
 
 
 init_rabbit()
@@ -64,5 +65,5 @@ def event_callback(ch, method, properties, body):
 
     
 
-event_channel.basic_consume(event_callback, queue='pulserr_raw', no_ack=True)
-event_channel.start_consuming()
+channel.basic_consume(event_callback, queue='pulserr_raw', no_ack=True)
+channel.start_consuming()
