@@ -24,7 +24,7 @@ def calc_consumption(body):
     delta_time_sec = delta_time.seconds + delta_time.microseconds/1000000.0
     kw = 3.6/delta_time_sec
     last_time_stamp = curr_time
-    if USE_GECKO
+    if USE_GECKO:
         post_to_gecko(round(kw,1))
 
 
@@ -32,6 +32,7 @@ def post_to_gecko(value):
     global last
     diff_percent = round(abs(last - value)/last*100,0)
     print("Got value {}".format(value))
+    #Only post when significant changes occours to avoid posting all the time
     if diff_percent > 10:
         print("Post to gecko {}".format(value))
         body = '{"api_key": "","data": {"item": 4,"min": {"value": 0},"max": {"value": 10}}}'
