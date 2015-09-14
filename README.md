@@ -10,11 +10,15 @@ Listen for events from phidgets sensors and push to a rabbitmq. This raw sensor 
 
 Consume raw sensor events and identify pulses. Push pulses to rabbitmq.
 
-## Todo
 * pulseToDB.py
 
-Consume pulses and submit to db.
+Consume pulses and submit to db. Creates a local sqlite db.
 
+* pulseToCurrentConsumption.py
+
+Consume pulses and calculate the current delta.
+
+## Todo
 * pulseToGecko.py
 
 Consume pulses and submit to Geckoboard.
