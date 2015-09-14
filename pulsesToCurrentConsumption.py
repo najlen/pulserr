@@ -10,6 +10,8 @@ import datetime
 import requests
 import yaml
 
+USE_GECKO = True
+
 last_time_stamp = datetime.datetime.now()
 last = 1.0
 
@@ -22,7 +24,8 @@ def calc_consumption(body):
     delta_time_sec = delta_time.seconds + delta_time.microseconds/1000000.0
     kw = 3.6/delta_time_sec
     last_time_stamp = curr_time
-    post_to_gecko(round(kw,1))
+    if USE_GECKO
+        post_to_gecko(round(kw,1))
 
 
 def post_to_gecko(value):
