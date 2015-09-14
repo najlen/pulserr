@@ -7,6 +7,7 @@ Consume pulses and store counter to db.
 import pika
 import sqlite3 as lite
 from pprint import pprint as pp
+import rabbitUtils
 
 #Global db connection
 global con
@@ -15,20 +16,11 @@ def pulse_callback(ch, method, properties, body):
     print("Pulse received: {}".format(body))
     store_pulse_to_db()
 
-def init_rabbit():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
-    channel.queue_declare(queue='pulserr_pulse')
-    channel.basic_consume(pulse_callback, queue='pulserr_pulse', no_ack=True)
-    return channel
-
-
 def store_pulse_to_db():
     cur = con.cursor()
     cur.execute("INSERT OR IGNORE INTO counters (date, cnt) VALUES (DATE(),0);") 
     cur.execute('UPDATE counters set cnt = cnt +1 where date LIKE DATE();') 
     
-
 def init_lite():
     '''Init sqlite3 db'''    
     global con
@@ -44,12 +36,12 @@ def init_lite():
         print("Error %{}:".format(e.args[0]))
         sys.exit(1)
     
-    return con
+    return con   
     
     
 def main():
     con = init_lite()
-    channel = init_rabbit()
+    channel = rabbitUtils.init_rabbit_w_pulse_callback(pulse_callback)
     
     #Blocking call, will wait for callbacks.
     channel.start_consuming()

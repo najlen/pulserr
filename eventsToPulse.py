@@ -25,9 +25,9 @@ def init_rabbit():
     global channel
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
+    channel.exchange_declare(exchange='pulse', type='fanout')
     channel.queue_declare(queue='pulserr_raw')
-    channel.queue_declare(queue='pulserr_pulse')
-
+    #channel.queue_declare(queue='pulserr_pulse')
 
 
 def pulse(data):
@@ -36,7 +36,8 @@ def pulse(data):
     \"time\" : \"{}\",\
     \"sensor\": {}}}".format(data['time'], data['sensor'])
     print(body)
-    channel.basic_publish(exchange='', routing_key='pulserr_pulse', body=body)
+    #channel.basic_publish(exchange='', routing_key='pulserr_pulse', body=body)
+    channel.basic_publish(exchange='pulse', routing_key='', body=body)
 
 def indentify_pulse(json_data):
     '''Consume events and identify pulses. Rise and fall in event value is a pulse'''
