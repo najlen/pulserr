@@ -9,6 +9,7 @@ import json
 import datetime
 import requests
 import yaml
+import sys
 
 USE_GECKO = True
 
@@ -40,8 +41,8 @@ def post_to_gecko(value):
         json_body['data']['item'] = value
         json_body['api_key'] =  cfg['gecko']['api_key']
         r = requests.post(cfg['gecko']['url'], json=json_body)
-        r.raise_for_status()
         last = value
+    sys.stdout.flush()
     
     
 def pulse_callback(ch, method, properties, body):
