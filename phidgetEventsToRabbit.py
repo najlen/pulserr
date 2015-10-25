@@ -11,7 +11,7 @@ __date__ = '2015-09-08'
 
 #Basic imports
 from ctypes import *
-import sys
+import sys, time, json
 from pprint import pprint as pp
 
 #Phidget specific imports
@@ -22,8 +22,24 @@ from Phidgets.Phidget import PhidgetLogLevel
 
 #RabbitMQ by Pika
 import pika
-import datetime
-import time
+from datetime import datetime
+
+def main():
+    initRabbit()
+    interfaceKit = create_intefracekit()
+    setHandlers(interfaceKit)
+    openPhidget(interfaceKit)
+    attachPhidget(interfaceKit)
+    setChangeTrigger(interfaceKit)
+    setRate(interfaceKit)
+
+    #wait for input from user to close program.
+    #chr = sys.stdin.read(1)
+    while True:
+        time.sleep(5)
+    interfaceKit.closePhidget()
+    connection.close()        
+    exit(0)
 
 
 def create_intefracekit():
@@ -48,12 +64,10 @@ def initRabbit():
     channel.queue_declare(queue='pulserr_raw')
 
 def sendRabbitMessage(sensor, value):
-    body = "{{\
-    \"time\" : \"{}\",\
-    \"sensor\": {},\
-    \"value\" : {}}}".format(datetime.datetime.now(), sensor, value)
-    print(body)
-    channel.basic_publish(exchange='', routing_key='pulserr_raw', body=body)
+    body = {'time': datetime.now().isoformat(), 'sensor': sensor, 'value': value}
+
+    print("phEvToR publishing       {}".format(json.dumps(body)))
+    channel.basic_publish(exchange='', routing_key='pulserr_raw', body=json.dumps(body))
 
 #Event Handler Callback Functions
 def interfaceKitAttached(e):
@@ -145,21 +159,5 @@ def closeInterfacekit(interfaceKit):
 
 
 
-def main():
-    initRabbit()
-    interfaceKit = create_intefracekit()
-    setHandlers(interfaceKit)
-    openPhidget(interfaceKit)
-    attachPhidget(interfaceKit)
-    setChangeTrigger(interfaceKit)
-    setRate(interfaceKit)
 
-    #wait for input from user to close program.
-    #chr = sys.stdin.read(1)
-    while True:
-        time.sleep(5)
-    interfaceKit.closePhidget()
-    connection.close()
-        
-    exit(0)
 main()

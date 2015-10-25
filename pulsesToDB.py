@@ -4,22 +4,29 @@
 Consume pulses and store counter to db.
 """
 
-import pika
+import pika, rabbitUtils, dateutil.parser, json
 import sqlite3 as lite
-from pprint import pprint as pp
-import rabbitUtils
 
 #Global db connection
 global con
 
 def pulse_callback(ch, method, properties, body):
     print("Pulse received: {}".format(body))
-    store_pulse_to_db()
+    store_pulse_to_db(body)
 
-def store_pulse_to_db():
+def store_pulse_to_db(body):
+    data = json.loads(body.decode("utf-8"))
+    date_time = dateutil.parser.parse(data['time'])
+    day_string = "{:%Y-%m-%d}".format(date_time)
+    minute_string = "{:%Y-%m-%d %H:%M}".format(date_time)
+    print(minute_string)
     cur = con.cursor()
-    cur.execute("INSERT OR IGNORE INTO counters (date, cnt) VALUES (DATE(),0);") 
-    cur.execute('UPDATE counters set cnt = cnt +1 where date LIKE DATE();') 
+
+    cur.execute("INSERT OR IGNORE INTO counters_day (date, cnt) VALUES (\'{}\',0);".format(day_string)) 
+    cur.execute("INSERT OR IGNORE INTO counters_minute (date, cnt) VALUES (\'{}\',0);".format(minute_string)) 
+
+    cur.execute('UPDATE counters_day set cnt = cnt +1 where date LIKE \'{}\';'.format(day_string)) 
+    cur.execute("UPDATE counters_minute set cnt = cnt +1 where date LIKE \'{}\';".format(minute_string)) 
     
 def init_lite():
     '''Init sqlite3 db'''    
@@ -29,7 +36,8 @@ def init_lite():
         con = lite.connect("{}.sqlite".format(__file__[:-3]), isolation_level=None)    
         cur = con.cursor()    
         cur.execute("CREATE TABLE if not exists currentpow (id INTEGER PRIMARY KEY, value FLOAT);")
-        cur.execute("CREATE TABLE if not exists counters (`date` date NOT NULL, `cnt` int NOT NULL, PRIMARY KEY (`date`));")
+        cur.execute("CREATE TABLE if not exists counters_day (`date` date NOT NULL, `cnt` int NOT NULL, PRIMARY KEY (`date`));")
+        cur.execute("CREATE TABLE if not exists counters_minute (`date` date NOT NULL, `cnt` int NOT NULL, PRIMARY KEY (`date`));")        
         cur.execute("INSERT OR IGNORE into currentpow (id, value) values (1, 0.0);")
         
     except lite.Error as e:
